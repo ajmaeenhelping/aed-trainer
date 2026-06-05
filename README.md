@@ -76,28 +76,95 @@ The following critical mistakes in `d1.ino` were corrected in `sketch.ino`:
 ### 1. **No Button Input Handling** (Critical)
    - **d1.ino**: Button reading code was commented out (lines 438-442), so modes ran sequentially regardless of button press.
    - **sketch.ino**: Implemented proper button detection in `loop()` with `if (pressed(btnCPR, lastCPR))` checks.
+   
+   **How it should work:**
+   ```cpp
+   // Continuously check buttons in loop
+   void loop() {
+     if (pressed(btnCPR, lastCPR)) {        // Only triggers once per button press
+       showSelectedMode(1);
+       runSelectedMode(1);
+     }
+     if (pressed(btnBreath, lastBreath)) {  // Each button is independent
+       showSelectedMode(2);
+       runSelectedMode(2);
+     }
+   }
+   ```
 
 ### 2. **Invalid LCD Cursor Position**
    - **d1.ino**: `lcd.setCursor(0,3)` in mode2 (line 134) — a 16x2 LCD only has rows 0 and 1.
    - **sketch.ino**: Corrected to `lcd.setCursor(0, 0)` (line 216).
+   
+   **Why**: A 16x2 LCD has only 2 rows (0 and 1). Row 3 doesn't exist and causes undefined behavior.
 
 ### 3. **Wrong LED Pin**
    - **d1.ino**: Green LED on `D1` (line 38), which is the UART TX pin causing serial conflicts.
    - **sketch.ino**: Moved to `D7` (line 34).
+   
+   **Why**: D0/D1 are hardware serial pins (RX/TX). Using D1 for GPIO breaks serial communication needed for debugging/uploads.
 
-### 4. **No Debouncing or Edge Detection**
+### 4. **No Debouncing or Edge Detection** (Critical)
    - **d1.ino**: `pinMode(buttonRED, INPUT)` without `INPUT_PULLUP`; unreliable readings, no debounce logic.
-   - **sketch.ino**: Uses `INPUT_PULLUP` and implements `pressed()` function (lines 62-71) with:
-     - Falling edge detection (HIGH → LOW)
-     - 30ms debounce delay
+   - **sketch.ino**: Uses `INPUT_PULLUP` and implements `pressed()` function (lines 62-71).
+   
+   **Why buttons fail in d1:**
+   - `INPUT` mode floats; button voltage is undefined when released → random reads.
+   - No debounce → single button press triggers multiple times due to electrical bounce (~5-20ms).
+   - No edge detection → mode runs multiple times per press.
+   
+   **How sketch.ino fixes it:**
+   ```cpp
+   // INPUT_PULLUP: pulls pin HIGH internally (5V), LOW when button pressed (connects to GND)
+   pinMode(btnCPR, INPUT_PULLUP);
+   
+   // Edge detection: only triggers once when transitioning HIGH → LOW
+   bool pressed(int pin, bool &lastState) {
+     bool now = digitalRead(pin);                // LOW = pressed with INPUT_PULLUP
+     bool justPressed = (lastState == HIGH && now == LOW);  // Falling edge
+     lastState = now;
+     if (justPressed) {
+       delay(30);  // Debounce: ignore electrical noise for 30ms
+       return true;
+     }
+     return false;
+   }
+   ```
+   
+   **Wiring requirement with INPUT_PULLUP:**
+   ```
+   Button pin (D13) ----[Button]---- GND
+   (Arduino pulls to 5V when not pressed)
+   ```
 
 ### 5. **Hard-Coded Sequential Mode Execution**
    - **d1.ino**: Loop runs mode1 → compression → shock → mode2 → breathing → mode3 in fixed sequence, then exits.
    - **sketch.ino**: Loop continuously checks buttons and runs only the selected mode.
+   
+   **d1.ino execution (wrong):**
+   ```cpp
+   mode1();           // Always runs first
+   compression();     // Always runs
+   shock();           // Always runs
+   mode2();           // Always runs
+   breathing();       // Always runs
+   mode3();           // Always runs
+   // Loop exits, never returns to check buttons
+   ```
+   
+   **sketch.ino execution (correct):**
+   ```cpp
+   // Press RED button → only mode1 runs
+   // Press BLUE button → only mode2 runs
+   // Press GREEN button → only mode3 runs
+   // Returns to idle, ready for next button press
+   ```
 
 ### 6. **Broken Loop Structure**
    - **d1.ino**: Loop doesn't return to check buttons; it runs once and ends.
-   - **sketch.ino**: Loop repeats, checking button states each iteration with edge detection.
+   - **sketch.ino**: Loop repeats continuously, checking button states each iteration.
+   
+   **Why**: Arduino's `loop()` should run forever. In d1, it executes all code once then doesn't restart.
 
 ### 7. **Incomplete/Malformed Code**
    - **d1.ino**: Line 442 has `digitalWrite (, HIGH);` (missing pin), lines 506-508 are incomplete conditionals.
@@ -109,9 +176,9 @@ The following critical mistakes in `d1.ino` were corrected in `sketch.ino`:
 
 ### 9. **No Mode Wrapper Functions**
    - **d1.ino**: Nested braces with no functional purpose (lines 448-454, 488-492, 498-502).
-   - **sketch.ino**: Proper helper functions: `runCPR()`, `runRescueBreath()`, `runSelectedMode()`.
+   - **sketch.ino**: Proper helper functions: `runCPR()`, `runRescueBreath()`, `runSelectedMode()` for cleaner, reusable code.
 
-**Result**: `d1.ino` ignores button input entirely. `sketch.ino` correctly implements **3 independent button-driven modes**.
+**Result**: `d1.ino` ignores button input entirely. `sketch.ino` correctly implements **3 independent button-driven modes** with proper debouncing and edge detection.
 
 ## Notes
 
