@@ -69,7 +69,50 @@ All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino p
    - `GREEN` for Victim Saved mode
 4. Watch the LCD sequence and listen for the buzzer feedback.
 
+## Fixes from d1.ino → sketch.ino
+
+The following critical mistakes in `d1.ino` were corrected in `sketch.ino`:
+
+### 1. **No Button Input Handling** (Critical)
+   - **d1.ino**: Button reading code was commented out (lines 438-442), so modes ran sequentially regardless of button press.
+   - **sketch.ino**: Implemented proper button detection in `loop()` with `if (pressed(btnCPR, lastCPR))` checks.
+
+### 2. **Invalid LCD Cursor Position**
+   - **d1.ino**: `lcd.setCursor(0,3)` in mode2 (line 134) — a 16x2 LCD only has rows 0 and 1.
+   - **sketch.ino**: Corrected to `lcd.setCursor(0, 0)` (line 216).
+
+### 3. **Wrong LED Pin**
+   - **d1.ino**: Green LED on `D1` (line 38), which is the UART TX pin causing serial conflicts.
+   - **sketch.ino**: Moved to `D7` (line 34).
+
+### 4. **No Debouncing or Edge Detection**
+   - **d1.ino**: `pinMode(buttonRED, INPUT)` without `INPUT_PULLUP`; unreliable readings, no debounce logic.
+   - **sketch.ino**: Uses `INPUT_PULLUP` and implements `pressed()` function (lines 62-71) with:
+     - Falling edge detection (HIGH → LOW)
+     - 30ms debounce delay
+
+### 5. **Hard-Coded Sequential Mode Execution**
+   - **d1.ino**: Loop runs mode1 → compression → shock → mode2 → breathing → mode3 in fixed sequence, then exits.
+   - **sketch.ino**: Loop continuously checks buttons and runs only the selected mode.
+
+### 6. **Broken Loop Structure**
+   - **d1.ino**: Loop doesn't return to check buttons; it runs once and ends.
+   - **sketch.ino**: Loop repeats, checking button states each iteration with edge detection.
+
+### 7. **Incomplete/Malformed Code**
+   - **d1.ino**: Line 442 has `digitalWrite (, HIGH);` (missing pin), lines 506-508 are incomplete conditionals.
+   - **sketch.ino**: All syntax is clean and complete.
+
+### 8. **Unused Variables**
+   - **d1.ino**: `byte numButtonModes = 2;` defined but never used (line 30).
+   - **sketch.ino**: Removed unused variables.
+
+### 9. **No Mode Wrapper Functions**
+   - **d1.ino**: Nested braces with no functional purpose (lines 448-454, 488-492, 498-502).
+   - **sketch.ino**: Proper helper functions: `runCPR()`, `runRescueBreath()`, `runSelectedMode()`.
+
+**Result**: `d1.ino` ignores button input entirely. `sketch.ino` correctly implements **3 independent button-driven modes**.
+
 ## Notes
 
-- If you want the original `ON/OFF` + menu style behavior, the earlier `d1.ino` base code is not complete and does not implement button-driven mode selection.
 - This README is written for physical wiring on a real Arduino UNO, with the Wokwi simulator wiring reflected in `diagram.json`.
