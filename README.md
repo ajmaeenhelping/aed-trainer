@@ -12,6 +12,7 @@ When a button is pressed, the selected mode starts immediately and runs its sequ
 
 ## Files
 
+- `mini_aed_trainer.ino` — new story-driven CPR trainer with CPR, Rescue Breath, and Shock Only modes
 - `sketch.ino` — current working sketch with direct mode selection for red/blue/green buttons
 - `d1.ino` — original base code provided by the project owner
 - `diagram.json` — Wokwi board layout and wiring description
@@ -24,7 +25,7 @@ All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino p
 
 - `RED` button: `D13`
 - `BLUE` button: `D12`
-- `GREEN` button: `D10`
+- `YELLOW` button: `D10`
 
 ### LCD (16x2)
 
@@ -54,20 +55,32 @@ All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino p
 ## Wiring summary
 
 1. Place each pushbutton so it connects one pin to the Arduino input pin and the other to ground.
-2. Use `INPUT_PULLUP` in `sketch.ino`, so the buttons read `HIGH` when released and `LOW` when pressed.
+2. Use `INPUT_PULLUP` in the sketch, so the buttons read `HIGH` when released and `LOW` when pressed.
 3. Connect the LCD with the standard 4-bit wiring shown above.
 4. Connect LEDs through 220Ω resistors to `D2` and `D7`, with the other LED terminal to `GND`.
 5. Connect the buzzer to `D8` and `GND`.
 
 ## How to use
 
-1. Upload `sketch.ino` to the Arduino UNO.
+1. Upload `mini_aed_trainer.ino` to the Arduino UNO.
 2. Power the UNO.
 3. Press:
    - `RED` for CPR mode
    - `BLUE` for Rescue Breath mode
-   - `GREEN` for Victim Saved mode
+   - `YELLOW` for Shock Only mode
 4. Watch the LCD sequence and listen for the buzzer feedback.
+
+## New story-driven CPR mode
+
+The new `mini_aed_trainer.ino` file adds a guided training flow:
+
+- Intro screen: "Let’s practise CPR with Mini AED Trainer. Place the pads as in the guide. Select Mode. Press the button. R=CPR B=Breath Y=Shock Only"
+- `RED` starts 3 cycles of CPR with 30 compressions each.
+- After each cycle, the trainer shows a 10-second window to press `YELLOW` for shock.
+- If shock is not pressed within 10 seconds, the next CPR cycle continues.
+- After 3 cycles, the patient proceeds to Recovery Position.
+- `BLUE` starts one Rescue Breath cycle with a 3,2,1,T- preparation flow and 20 breaths over 2 minutes.
+- After the Rescue Breath cycle, the patient proceeds to Recovery Position.
 
 ## Fixes from d1.ino → sketch.ino
 
@@ -179,6 +192,19 @@ The following critical mistakes in `d1.ino` were corrected in `sketch.ino`:
    - **sketch.ino**: Proper helper functions: `runCPR()`, `runRescueBreath()`, `runSelectedMode()` for cleaner, reusable code.
 
 **Result**: `d1.ino` ignores button input entirely. `sketch.ino` correctly implements **3 independent button-driven modes** with proper debouncing and edge detection.
+
+## Fixes from sketch.ino → mini_aed_trainer.ino
+
+The new `mini_aed_trainer.ino` sketch builds on `sketch.ino` and adds a story-based CPR trainer experience:
+
+- `sketch.ino` used direct button selection for CPR, Rescue Breath, and Victim Saved.
+- `mini_aed_trainer.ino` adds an intro flow, recovery position screen, and a dedicated `YELLOW` shock-only mode.
+- `RED` now runs 3 guided CPR cycles of 30 compressions each, with a 10-second `YELLOW` shock prompt after every cycle.
+- `BLUE` now runs one Rescue Breath cycle using the `3,2,1,T-` prep flow and 20 breaths.
+- `YELLOW` now triggers an explicit shock-only sequence, instead of `GREEN` for Victim Saved.
+- Keeps the reliable `INPUT_PULLUP` button reading and debounced falling-edge detection from `sketch.ino`.
+- Introduces `promptShock()` to pause for a decision window instead of always applying shock immediately.
+- Uses clearer helper functions for story screens, compress cycles, and mode transitions.
 
 ## Notes
 
