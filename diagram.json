@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "author": "Mini AED Trainer",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+
+    { "type": "wokwi-lcd1602", "id": "lcd", "top": -150, "left": 200,
+      "attrs": { "pins": "full" } },
+
+    { "type": "wokwi-pushbutton", "id": "btnBlue", "top": 100, "left": 250,
+      "attrs": { "color": "blue" } },
+    { "type": "wokwi-pushbutton", "id": "btnYellow", "top": 100, "left": 400,
+      "attrs": { "color": "yellow" } },
+    { "type": "wokwi-pushbutton", "id": "btnRed", "top": 100, "left": 550,
+      "attrs": { "color": "red" } },
+
+    { "type": "wokwi-led", "id": "ledRED", "top": 250, "left": 250,
+      "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "ledGREEN", "top": 250, "left": 400,
+      "attrs": { "color": "green" } },
+    { "type": "wokwi-resistor", "id": "rRED", "top": 300, "left": 250,
+      "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rGREEN", "top": 300, "left": 400,
+      "attrs": { "value": "220" } },
+
+    { "type": "wokwi-buzzer", "id": "bz", "top": 250, "left": 550,
+      "attrs": { "volume": "0.1" } }
+  ],
+  "connections": [
+    [ "uno:5V", "lcd:VDD", "red", [] ],
+    [ "uno:GND.1", "lcd:VSS", "black", [] ],
+    [ "uno:GND.1", "lcd:V0", "black", [] ],
+    [ "uno:GND.1", "lcd:RW", "black", [] ],
+    [ "uno:5V", "lcd:A", "red", [] ],
+    [ "uno:GND.1", "lcd:K", "black", [] ],
+
+    [ "uno:11", "lcd:RS", "green", [] ],
+    [ "uno:9", "lcd:E", "green", [] ],
+    [ "uno:6", "lcd:D4", "blue", [] ],
+    [ "uno:5", "lcd:D5", "blue", [] ],
+    [ "uno:4", "lcd:D6", "blue", [] ],
+    [ "uno:3", "lcd:D7", "blue", [] ],
+
+    [ "uno:12", "btnBlue:1.l", "blue", [] ],
+    [ "btnBlue:2.r", "uno:GND.2", "black", [] ],
+    [ "uno:10", "btnYellow:1.l", "yellow", [] ],
+    [ "btnYellow:2.r", "uno:GND.2", "black", [] ],
+    [ "uno:13", "btnRed:1.l", "red", [] ],
+    [ "btnRed:2.r", "uno:GND.2", "black", [] ],
+
+    [ "uno:2", "rRED:1", "red", [] ],
+    [ "rRED:2", "ledRED:A", "red", [] ],
+    [ "ledRED:C", "uno:GND.3", "black", [] ],
+
+    [ "uno:7", "rGREEN:1", "green", [] ],
+    [ "rGREEN:2", "ledGREEN:A", "green", [] ],
+    [ "ledGREEN:C", "uno:GND.3", "black", [] ],
+
+    [ "uno:8", "bz:1", "purple", [] ],
+    [ "bz:2", "uno:GND.3", "black", [] ]
+  ]
+}
