@@ -1,42 +1,36 @@
-# Mini AED Trainer (Arduino UNO) - Version 2
+# Mini AED Trainer (Arduino UNO) - Versi 2
 
-This project is a simulated AED trainer using an Arduino UNO, a 16x2 LCD, 3 pushbuttons, 2 LEDs, and a buzzer.
+Projek ini ialah alat latihan AED (Automated External Defibrillator) yang dibina menggunakan Arduino UNO, LCD 16x2, 3 butang tekan, 2 LED, dan satu buzzer.
 
-## Files
+## Fail
 
-- `final_v1.ino` — first direct-mode trainer. It has CPR, Rescue Breath, Shock Only, and early dual-button handling, but the Yellow shock button and combined-button mode are not robust.
-- `final_v2.ino` — updated trainer with stable button handling, dedicated Shock Only mode, and proper Red+Blue dual-button detection for CPR 130:1.
-- `diagram.json` — Wokwi board layout for the Arduino, LCD, buttons, LEDs, and buzzer.
+- `final_v1.ino` — alat latihan mod terus (direct-mode) yang pertama. Ia mempunyai mod CPR, Rescue Breath, Shock Only, dan pengendalian awal dua butang, tetapi butang shock kuning serta mod gabungan dua butang masih tidak stabil.
+- `final_v2.ino` — alat latihan yang telah dikemas kini dengan pengendalian butang yang stabil, mod Shock Only yang khusus, dan pengesanan dua butang Merah+Biru yang tepat untuk mod CPR 130:1.
 
-## What changed in `final_v2.ino`
+## Apa yang berubah dalam `final_v2.ino`
 
-- Yellow shock button now uses `INPUT_PULLUP`, so it does not float and trigger on its own.
-- Shock is delivered only when the user presses the Yellow button during the shock prompt.
-- `runShock()` was added so Mode 3 is a true Shock Only path.
-- Red + Blue pressed together reliably enters the CPR 130:1 mode.
-- Automatic shock calls after `advice()` were removed.
-- Dual-button logic is handled safely before individual button checks.
+- Butang shock kuning kini menggunakan `INPUT_PULLUP`, jadi ia tidak terapung (floating) dan tidak akan terpicu dengan sendiri.
+- Shock hanya diberikan apabila pengguna menekan butang kuning semasa arahan shock dipaparkan.
+- Fungsi `runShock()` ditambah supaya Mod 3 menjadi laluan Shock Only yang sebenar.
+- Tekan Merah + Biru serentak untuk masuk ke mod CPR 130:1 dengan boleh dipercayai.
+- Panggilan shock automatik selepas `advice()` telah dibuang.
+- Logik dua butang dikendalikan dengan selamat sebelum semakan butang tunggal.
 
-**Ringkas dalam Bahasa Melayu:**
-- Butang kuning hanya aktif untuk shock apabila ditekan semasa arahan shock.
-- Tekan R + B serentak untuk masuk mod CPR 130:1.
-- Mod 3 kini mod Shock Only yang berasingan.
-
-**Peta mod (Bahasa Melayu):**
+**Peta mod:**
 - `MERAH` = CPR biasa.
-- `BIRU` = Rescue Breath.
+- `BIRU` = Rescue Breath (bantuan pernafasan).
 - `KUNING` = Shock Only.
 - `MERAH + BIRU` = CPR 130:1.
 
-## Arduino pin connections
+## Sambungan pin Arduino
 
-### Buttons
+### Butang
 
-All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino pin and the other side goes to `GND`.
+Semua butang menggunakan `INPUT_PULLUP`, jadi satu hujung setiap butang disambung ke pin Arduino dan hujung yang satu lagi disambung ke `GND`.
 
-- `RED` button: `D13`
-- `BLUE` button: `D12`
-- `YELLOW` button: `D10`
+- Butang `MERAH` (RED): `D13`
+- Butang `BIRU` (BLUE): `D12`
+- Butang `KUNING` (YELLOW): `D10`
 
 ### LCD (16x2)
 
@@ -48,41 +42,31 @@ All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino p
 - `D7` = `D3`
 - `VSS` = `GND`
 - `VDD` = `5V`
-- `V0` = `GND` (contrast fixed low)
+- `V0` = `GND` (kontras ditetapkan rendah)
 - `RW` = `GND`
-- `A` = `5V` (backlight)
+- `A` = `5V` (lampu latar / backlight)
 - `K` = `GND`
 
-### Outputs
+### Output
 
-- Red LED anode = `D2`
-- Green LED anode = `D7`
-- LED cathodes = `GND` through resistors
-- Buzzer positive = `D8`
-- Buzzer negative = `GND`
+- Anod LED Merah = `D2`
+- Anod LED Hijau = `D7`
+- Katod LED = `GND` melalui perintang (resistor)
+- Positif buzzer = `D8`
+- Negatif buzzer = `GND`
 
-> Note: `D1` is the Arduino TX pin, so the design avoids using it for GPIO.
+> Nota: `D1` ialah pin TX Arduino, jadi reka bentuk ini mengelak menggunakannya untuk GPIO.
 
-## Wiring summary
+## Ringkasan pendawaian (wiring)
 
-1. Place each pushbutton so it connects one pin to the Arduino input pin and the other to `GND`.
-2. Use `INPUT_PULLUP` in the sketch. Buttons read `HIGH` when released and `LOW` when pressed.
-3. Connect the LCD in 4-bit mode using the pin mapping above.
-4. Connect LEDs through 220Ω resistors to `D2` and `D7`, with the other terminal to `GND`.
-5. Connect the buzzer to `D8` and `GND`.
+1. Letakkan setiap butang tekan supaya ia menyambungkan satu pin ke pin input Arduino dan satu lagi ke `GND`.
+2. Gunakan `INPUT_PULLUP` dalam sketch. Butang membaca `HIGH` apabila dilepaskan dan `LOW` apabila ditekan.
+3. Sambungkan LCD dalam mod 4-bit menggunakan peta pin di atas.
+4. Sambungkan LED melalui perintang 220Ω ke `D2` dan `D7`, dengan terminal satu lagi ke `GND`.
+5. Sambungkan buzzer ke `D8` dan `GND`.
 
-## How to use `final_v2.ino`
+## Cara guna `final_v2.ino`
 
-1. Upload `final_v2.ino` to the Arduino UNO.
-2. Power the UNO.
-3. Press:
-   - `RED` for CPR mode
-   - `BLUE` for Rescue Breath mode
-   - `YELLOW` for Shock Only mode
-   - `RED + BLUE` together for the CPR 130:1 mode
-4. During CPR, press `YELLOW` when prompted to apply shock.
-
-**Cara guna (Bahasa Melayu):**
 1. Muat naik `final_v2.ino` ke Arduino UNO.
 2. Hidupkan papan UNO.
 3. Tekan:
@@ -92,46 +76,20 @@ All buttons use `INPUT_PULLUP`, so one side of each button goes to the Arduino p
    - `MERAH + BIRU` serentak untuk mod CPR 130:1
 4. Semasa CPR, tekan `KUNING` apabila diminta untuk memberi shock.
 
-## Mode comparison: `final_v1.ino` vs `final_v2.ino`
+## Perbandingan mod: `final_v1.ino` lawan `final_v2.ino`
 
 - `final_v1.ino`
-  - Yellow shock button uses `INPUT` and can float, causing false activation.
-  - Shock is still called automatically after the advice prompt.
-  - Red+Blue dual-button detection for CPR 130:1 is not reliable.
+  - Butang shock kuning menggunakan `INPUT` dan boleh terapung, menyebabkan pengaktifan palsu.
+  - Shock masih dipanggil secara automatik selepas mesej nasihat (advice).
+  - Pengesanan dua butang Merah+Biru untuk CPR 130:1 tidak boleh dipercayai.
 
 - `final_v2.ino`
-  - Yellow shock button uses `INPUT_PULLUP` and is stable.
-  - Shock only happens when Yellow is pressed during the prompt.
-  - Dedicated `runShock()` mode for Shock Only.
-  - Reliable Red+Blue detection for CPR 130:1.
-
-**Perbandingan dalam Bahasa Melayu:**
-- `final_v1.ino`
-  - Butang kuning menggunakan `INPUT` dan boleh memberi bacaan rawak.
-  - Shock masih berlaku secara automatik selepas mesej nasihat.
-  - Pengesanan Red+Blue untuk mod CPR 130:1 tidak konsisten.
-
-- `final_v2.ino`
-  - Butang kuning menggunakan `INPUT_PULLUP` dan lebih stabil.
-  - Shock hanya berlaku apabila `KUNING` ditekan semasa arahan shock.
+  - Butang shock kuning menggunakan `INPUT_PULLUP` dan stabil.
+  - Shock hanya berlaku apabila kuning ditekan semasa arahan shock.
   - Terdapat mod `runShock()` khusus untuk Shock Only.
-  - Pengesanan Red+Blue untuk CPR 130:1 lebih dipercayai.
+  - Pengesanan Merah+Biru untuk CPR 130:1 boleh dipercayai.
 
-## Diagram coordinates
+## Nota
 
-The `diagram.json` layout uses these part positions:
-
-- Arduino UNO: `top: 0`, `left: 0`
-- LCD 16x2: `top: -150`, `left: 200`
-- Blue button: `top: 100`, `left: 250`
-- Yellow button: `top: 100`, `left: 400`
-- Red button: `top: 100`, `left: 550`
-- Red LED: `top: 250`, `left: 250`
-- Green LED: `top: 250`, `left: 400`
-- Buzzer: `top: 250`, `left: 550`
-
-## Notes
-
-- The sketch depends on `INPUT_PULLUP` wiring: button pin → button → GND.
-- Use the `diagram.json` file in Wokwi to inspect the board layout.
-- Do not use the Arduino TX/RX pins for LEDs or buttons.
+- Sketch ini bergantung pada pendawaian `INPUT_PULLUP`: pin butang → butang → GND.
+- Jangan gunakan pin TX/RX Arduino untuk LED atau butang.
