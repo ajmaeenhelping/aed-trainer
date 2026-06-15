@@ -22,6 +22,26 @@ Projek ini ialah alat latihan AED (Automated External Defibrillator) yang dibina
 - `KUNING` = Shock Only.
 - `MERAH + BIRU` = CPR 130:1.
 
+## Naik taraf terkini (`final_v2.ino`)
+
+Dua penambahbaikan terkini pada butang shock:
+
+**1. Pengesahan sebelum shock (mod Shock Only / butang `KUNING`):**
+
+- Apabila `KUNING` ditekan untuk mod Shock Only, selepas skrin `Shock Only` / `Stand Clear!`, alat kini **meminta pengesahan** dahulu:
+
+  ```
+  Deliver Shock?
+  Y=Yes   R=No
+  ```
+
+- Tekan `KUNING` = **sahkan** (shock diberi). Tekan `MERAH` = **batal**. Tiada input dalam **10 saat** = batal automatik (`No shock given`).
+
+**2. Butang boleh ditekan semasa kitaran shock (`advice()`):**
+
+- Sebelum ini, pada langkah `Press Yellow Button for Shock`, kod hanya membaca butang `KUNING` **sekali sahaja** selepas `delay`, jadi tekanan pengguna hampir selalu terlepas.
+- Kini alat **memantau butang `KUNING` sehingga 10 saat** semasa mesej itu dipaparkan, jadi `KUNING` boleh ditekan **pada bila-bila masa** dalam tempoh tersebut dan shock akan diberi sebaik sahaja butang ditekan. Jika tidak ditekan → `No shock given` / `Next cycle`.
+
 ## Sambungan pin Arduino
 
 ### Butang
@@ -74,7 +94,8 @@ Semua butang menggunakan `INPUT_PULLUP`, jadi satu hujung setiap butang disambun
    - `BIRU` untuk mod Rescue Breath
    - `KUNING` untuk mod Shock Only
    - `MERAH + BIRU` serentak untuk mod CPR 130:1
-4. Semasa CPR, tekan `KUNING` apabila diminta untuk memberi shock.
+4. **Mod Shock Only (`KUNING`):** selepas `Shock Only` / `Stand Clear!`, alat tanya `Deliver Shock? Y=Yes R=No` — tekan `KUNING` untuk **sahkan** atau `MERAH` untuk **batal**.
+5. **Semasa CPR:** apabila `Press Yellow Button for Shock` dipaparkan, tekan `KUNING` dalam tempoh **10 saat** untuk memberi shock.
 
 ## Perbandingan mod: `final_v1.ino` lawan `final_v2.ino`
 

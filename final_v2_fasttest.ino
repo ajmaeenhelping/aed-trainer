@@ -1,27 +1,27 @@
 // ============================================================
-//  Mini AED Trainer - FINAL V2
-//  Red = CPR, Blue = Rescue Breath, Yellow = Shock Only
-//  Red + Blue = CPR 130:1 mode
+//  Mini AED Trainer - FAST TEST BUILD (for online test only)
+//  Identical logic to final_v2.ino, but every screen/cycle delay
+//  is routed through wait() and scaled by SPEED so the whole
+//  flow runs much faster while testing.
 //
-//  Fixes in V2:
-//  * Yellow shock button now uses INPUT_PULLUP and only fires when pressed.
-//  * Shock is not delivered automatically after advice.
-//  * Separate Shock Only mode implemented with runShock().
-//  * Dual Red+Blue button press now enters CPR 130:1 mode reliably.
+//  >>> DO NOT submit this file to the client. <<<
+//  Use final_v2.ino for the real demo (real-time speed).
 //
-//  Nota Bahasa Melayu:
-//  * Butang kuning hanya berfungsi untuk shock apabila ditekan semasa prompt.
-//  * Tekan R + B serentak untuk masuk ke mod CPR 130:1.
+//  How to change speed:
+//    SPEED = 1   -> real-time (same as final_v2.ino)
+//    SPEED = 10  -> 10x faster (default here, good for testing)
+//    SPEED = 20  -> 20x faster
 //
-//  Peta mod:
-//  * Tekan MERAH (R) = Mod CPR biasa.
-//  * Tekan BIRU (B) = Mod Rescue Breath.
-//  * Tekan KUNING (Y) = Mod Shock Only.
-//  * Tekan MERAH + BIRU serentak = Mod CPR 130:1.
+//  Button debounce delays are kept at real time on purpose so
+//  button presses stay reliable.
 // ============================================================
 
 #include <Wire.h>
 #include <LiquidCrystal.h>
+
+// ---------- Test speed factor ----------
+const int SPEED = 10;   // higher = faster testing
+void wait(unsigned long ms) { delay(ms / SPEED); }
 
 const int rs = 11, en = 9, d4 = 6, d5 = 5, d6 = 4, d7 = 3;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -69,7 +69,7 @@ bool pressed(int pin, bool &lastState) {
   bool justPressed = (lastState == HIGH && now == LOW);
   lastState = now;
   if (justPressed) {
-    delay(30);
+    delay(30);   // real-time debounce (not scaled)
     if (digitalRead(pin) == LOW) {
       return true;
     }
@@ -85,7 +85,7 @@ bool pressedBoth() {
   bool bothPressed = (nowCPR == LOW && nowBreath == LOW);
   bool justPressed = (bothPressed && (lastCPR == HIGH || lastBreath == HIGH));
   if (justPressed) {
-    // Debounce kedua-dua butang bersama-sama
+    // Debounce kedua-dua butang bersama-sama (real-time, not scaled)
     delay(30);
     if (digitalRead(btnCPR) == LOW && digitalRead(btnBreath) == LOW) {
       lastCPR = LOW;
@@ -114,36 +114,36 @@ void showIdle() {
   lcd.print("Let's practise");
   lcd.setCursor(0,1);
   lcd.print("CPR with");
-  delay(5000);
+  wait(5000);
 
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Mini AED Trainer");
-  delay(2000);
+  wait(2000);
   lcd.setCursor(0,1);
   lcd.print("Let us start!");
-  delay(2000);
+  wait(2000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Attach the pads");
   lcd.setCursor(0, 1);
   lcd.print("Select the Mode");
-  delay(5000);
+  wait(5000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Press the button");
   lcd.setCursor(0, 1);
   lcd.print("R=CPR B=Breath");
-  delay(5000);
+  wait(5000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("R + B = CPR2");
   lcd.setCursor(0, 1);
   lcd.print("Y=Shock Only");
-  delay(5000);
+  wait(5000);
 }
 
 void showSelectedMode(byte mode) {
@@ -159,7 +159,7 @@ void showSelectedMode(byte mode) {
   else if (mode == 3) lcd.print("Shock");
   else if (mode == 4) lcd.print("CPR 2");
   else                lcd.print("Unknown");
-  delay(3000);
+  wait(3000);
 }
 
 // ============================================================
@@ -171,20 +171,20 @@ void mode1() {
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(3000);
+  wait(3000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
 
   digitalWrite(ledRED,   HIGH);
   digitalWrite(ledGREEN, LOW);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Proceed to CPR");
-  delay(2000);
+  wait(2000);
   lcd.setCursor(0, 1);
   lcd.print("Ready Position");
-  delay(3000);
+  wait(3000);
 }
 
 void compression() {
@@ -193,18 +193,18 @@ void compression() {
   lcd.print("Compression");
   lcd.setCursor(0, 1);
   lcd.print("Start : ");
-  delay(2000);
+  wait(2000);
 
   for (int i = 0; i < 30; i++) {
     lcd.setCursor(9, 1);
     lcd.print(i + 1);
     digitalWrite(ledRED, HIGH);
     digitalWrite(buzzer, HIGH);
-    delay(300);
+    wait(300);
     digitalWrite(ledRED,   LOW);
     digitalWrite(ledGREEN, LOW);
     digitalWrite(buzzer,   LOW);
-    delay(300);
+    wait(300);
   }
 }
 
@@ -215,56 +215,51 @@ void shock() {
   digitalWrite(buzzer,   HIGH);
   digitalWrite(ledRED,   HIGH);
   digitalWrite(ledGREEN, LOW);
-  delay(1500);
+  wait(1500);
   digitalWrite(buzzer,   LOW);
   digitalWrite(ledRED,   LOW);
   digitalWrite(ledGREEN, LOW);
-  delay(3000);
+  wait(3000);
 }
 
 void advice() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Shock Adviced!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("I Clear!");
   lcd.setCursor(0, 1);
   lcd.print("You Clear!");
-  delay(2500);
+  wait(2500);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("   Everybody   ");
   lcd.setCursor(0, 1);
   lcd.print("    Clear!    ");
-  delay(3000);
+  wait(3000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Press Yellow");
   lcd.setCursor(0, 1);
   lcd.print("Button for Shock");
+  wait(2500);
 
-  // Poll Yellow up to 10s so it can be pressed any time the prompt is shown.
-  unsigned long start = millis();
-  bool gaveShock = false;
-  while (millis() - start < 10000) {
-    if (pressed(btnShock, lastShock)) { gaveShock = true; break; }
-  }
-
-  if (gaveShock) {
+  if (pressed(btnShock, lastShock)) {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Shock Delivered");
-    delay(1000);
+    wait(1000);
     shock();
   } else {
+    wait(10000);
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("No shock given");
     lcd.setCursor(0, 1);
     lcd.print("Next cycle");
-    delay(2000);
+    wait(2000);
   }
 }
 
@@ -274,15 +269,15 @@ void safe() {
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(3000);
+  wait(3000);
   lcd.setCursor(12, 1);
   lcd.print("Yes!");
-  delay(2000);
+  wait(2000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Stop Compression");
-  delay(2500);
+  wait(2500);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Do Recovery");
@@ -290,50 +285,50 @@ void safe() {
   lcd.print("Position");
   digitalWrite(ledRED,   LOW);
   digitalWrite(ledGREEN, HIGH);
-  delay(5000);
+  wait(5000);
 }
 
 void runCPR() {
   mode1();
   compression();
   advice();
-  delay(1000);
+  wait(1000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(1000);
+  wait(1000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Continue CPR");
-  delay(2000);
+  wait(2000);
 
   compression();
   advice();
-  delay(1000);
+  wait(1000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(1000);
+  wait(1000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Continue CPR");
-  delay(2000);
+  wait(2000);
 
   compression();
   advice();
-  delay(1000);
+  wait(1000);
   safe();
 }
 
@@ -346,32 +341,32 @@ void mode2() {
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Yes, heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("detected but...");
-  delay(3000);
+  wait(3000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("No breathing");
   lcd.setCursor(0, 1);
   lcd.print("detected!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Proceed to");
   lcd.setCursor(0, 1);
   lcd.print("Rescue Breath");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Ready? 3,2,1,T-");
-  delay(3000);
+  wait(3000);
   lcd.setCursor(0, 1);
   lcd.print("Inhale & Blow");
-  delay(3000);
+  wait(3000);
 }
 
 void breathing() {
@@ -380,27 +375,27 @@ void breathing() {
   lcd.print("Rescue Breath");
   lcd.setCursor(0, 1);
   lcd.print("Start : ");
-  delay(1000);
+  wait(1000);
   digitalWrite(buzzer,  HIGH);
   digitalWrite(ledRED,  HIGH);
-  delay(250);
+  wait(250);
   digitalWrite(buzzer,  LOW);
   digitalWrite(ledRED,  LOW);
-  delay(250);
+  wait(250);
 
-  delay(500);
+  wait(500);
 
   for (int i = 0; i < 20; i++) {
     lcd.setCursor(9, 1);
     lcd.print(i + 1);
-    delay(6000);
+    wait(6000);
     digitalWrite(ledRED, HIGH);
     digitalWrite(buzzer, HIGH);
-    delay(300);
+    wait(300);
     digitalWrite(ledRED,   LOW);
     digitalWrite(ledGREEN, LOW);
     digitalWrite(buzzer,   LOW);
-    delay(300);
+    wait(300);
   }
 }
 
@@ -419,20 +414,20 @@ void mode3() {
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(3000);
+  wait(3000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
 
   digitalWrite(ledRED,   HIGH);
   digitalWrite(ledGREEN, LOW);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Proceed to CPR2");
-  delay(2000);
+  wait(2000);
   lcd.setCursor(0, 1);
   lcd.print("Ready Position");
-  delay(3000);
+  wait(3000);
 }
 
 void compression2() {
@@ -441,18 +436,18 @@ void compression2() {
   lcd.print("Compression");
   lcd.setCursor(0, 1);
   lcd.print("Start : ");
-  delay(2000);
+  wait(2000);
 
   for (int i = 0; i < 130; i++) {
     lcd.setCursor(9, 1);
     lcd.print(i + 1);
     digitalWrite(ledRED, HIGH);
     digitalWrite(buzzer, HIGH);
-    delay(300);
+    wait(300);
     digitalWrite(ledRED,   LOW);
     digitalWrite(ledGREEN, LOW);
     digitalWrite(buzzer,   LOW);
-    delay(300);
+    wait(300);
   }
 }
 
@@ -460,61 +455,44 @@ void runCPR2() {
   mode3();
   compression2();
   advice();
-  delay(1000);
+  wait(1000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(1000);
+  wait(1000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Continue CPR");
-  delay(2000);
+  wait(2000);
 
   compression2();
   advice();
-  delay(1000);
+  wait(1000);
 
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Heartbeat");
   lcd.setCursor(0, 1);
   lcd.print("Detected?");
-  delay(1000);
+  wait(1000);
   lcd.setCursor(12, 1);
   lcd.print("No!");
-  delay(2000);
+  wait(2000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Continue CPR");
-  delay(2000);
+  wait(2000);
 
   compression2();
   advice();
-  delay(1000);
+  wait(1000);
   safe();
-}
-
-// Ask Y=Yes / R=No before delivering a shock. Returns true if confirmed.
-// Yellow = confirm, Red = cancel, auto-cancel after 10s with no input.
-bool confirmShock() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Deliver Shock?");
-  lcd.setCursor(0, 1);
-  lcd.print("Y=Yes   R=No");
-
-  unsigned long start = millis();
-  while (millis() - start < 10000) {
-    if (pressed(btnShock, lastShock)) return true;   // Yellow = confirm
-    if (pressed(btnCPR, lastCPR))     return false;  // Red = cancel
-  }
-  return false;  // timeout = cancel
 }
 
 void runShock() {
@@ -523,16 +501,8 @@ void runShock() {
   lcd.print("Shock Only");
   lcd.setCursor(0, 1);
   lcd.print("Stand Clear!");
-  delay(2000);
-
-  if (confirmShock()) {
-    shock();
-  } else {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("No shock given");
-    delay(1500);
-  }
+  wait(2000);
+  shock();
 }
 
 void runSelectedMode(byte mode) {

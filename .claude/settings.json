@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git push *)",
       "Bash(git fetch *)",
-      "Bash(git rev-list *)"
+      "Bash(git rev-list *)",
+      "WebFetch(domain:docs.wokwi.com)",
+      "Bash(git checkout *)"
     ]
   }
 }

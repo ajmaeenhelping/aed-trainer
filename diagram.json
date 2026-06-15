@@ -5,9 +5,9 @@
   "parts": [
     { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
     { "type": "wokwi-lcd1602", "id": "lcd", "top": -150, "left": 200, "attrs": { "pins": "full" } },
-    { "type": "wokwi-pushbutton", "id": "btnBlue", "top": 100, "left": 250, "attrs": { "color": "blue" } },
-    { "type": "wokwi-pushbutton", "id": "btnYellow", "top": 100, "left": 400, "attrs": { "color": "yellow" } },
-    { "type": "wokwi-pushbutton", "id": "btnRed", "top": 100, "left": 550, "attrs": { "color": "red" } },
+    { "type": "wokwi-pushbutton", "id": "btnBlue", "top": 100, "left": 250, "attrs": { "color": "blue", "key": "b" } },
+    { "type": "wokwi-pushbutton", "id": "btnYellow", "top": 100, "left": 400, "attrs": { "color": "yellow", "key": "y" } },
+    { "type": "wokwi-pushbutton", "id": "btnRed", "top": 100, "left": 550, "attrs": { "color": "red", "key": "r" } },
     { "type": "wokwi-led", "id": "ledRED", "top": 250, "left": 250, "attrs": { "color": "red" } },
     { "type": "wokwi-led", "id": "ledGREEN", "top": 250, "left": 400, "attrs": { "color": "green" } },
     { "type": "wokwi-resistor", "id": "rRED", "top": 300, "left": 250, "attrs": { "value": "220" } },
